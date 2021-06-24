@@ -1,10 +1,18 @@
 use super::schema::todo;
 
-#[derive(Queryable,Insertable,serde::Deserialize,serde::Serialize)]
-#[table_name="todo"]
+#[derive(serde::Serialize, serde::Deserialize, Queryable)]
 pub struct Todo{
-    pub ID: i32,
+    pub id: i32,
     pub task:String,
+    pub user:String,
+    pub iscompleted:String,
+}
 
+#[derive(Insertable,serde::Deserialize)]
+#[table_name="todo"]
+pub struct Addable{
+    pub task:String,
+    pub user:String,
+    iscompleted:String,
 }
 

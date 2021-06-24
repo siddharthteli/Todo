@@ -1,5 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE todo(
-    ID INTEGER PRIMARY KEY,
-    task TEXT NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task TEXT NOT NULL,
+    user TEXT NOT NULL,
+    iscompleted TEXT NOT NULL,
 )

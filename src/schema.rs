@@ -1,6 +1,8 @@
 table! {
-    todo (ID) {
-        ID -> Integer,
+    todo (id) {
+        id -> Integer,
         task -> Text,
+        user -> Text,
+        iscompleted -> Text,
     }
 }
