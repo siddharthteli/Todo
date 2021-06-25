@@ -10,7 +10,7 @@ pub struct Todo{
 
 #[derive(Insertable,serde::Deserialize)]
 #[table_name="todo"]
-pub struct Addable{
+pub struct InsertableTodo{
     pub task:String,
     pub user:String,
     iscompleted:String,

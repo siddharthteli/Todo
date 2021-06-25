@@ -10,8 +10,9 @@ edition = "2018"
 rocket = { version = "0.5.0-rc.1", features = ["secrets", "tls", "json"] }
 serde = { version = "1.0", features = ["derive"] }
 base64 = "0.13"
-diesel = { version = "1.4", features = ["sqlite", "r2d2"] }
+diesel = { version = "1.4", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.17.3", features = ["bundled"]}
+
 [dependencies.rocket_sync_db_pools]
 version = "0.1.0-rc.1"
 features = ["diesel_sqlite_pool"]

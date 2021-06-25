@@ -18,63 +18,60 @@ use schema::*;
 
 #[database("sqlite_db")]
 struct DbConn(diesel::SqliteConnection);
-
-#[get("/todo")]
-async fn view_all_task(conn: DbConn) -> Value {
+// create new todo
+#[get("/view-all")]
+async fn view_all_todo(conn: DbConn) -> Value {
     conn.run(|c| {
         let all = todo::table
             .limit(100)
             .load::<Todo>(c)
-            .expect("Error loading rustaceans from DB!");
+            .expect("Error loading todo from DB!");
         json!(all)
     })
     .await
 }
-
-#[get("/todo/<id>")]
-async fn view_task(id: i32, conn: DbConn) -> Value {
+//
+#[get("/view/<id>")]
+async fn view_one_todo(id: i32, conn: DbConn) -> Value {
     conn.run(move |c| {
         let rustacean = todo::table
             .find(id)
             .get_result::<Todo>(c)
-            .expect("Error loading rustacean from DB");
+            .expect("Task doesn't task");
         json!(rustacean)
     })
     .await
 }
 
-#[post("/todo", format = "json", data = "<todo1>")]
-async fn create_task(conn: DbConn, todo1: Json<Addable>) -> Value {
+#[post("/create", format = "json", data = "<todo1>")]
+async fn create_todo(conn: DbConn, todo1: Json<InsertableTodo>) -> Value {
     conn.run(|c| {
         let result = diesel::insert_into(todo::table)
             .values(todo1.into_inner())
             .execute(c)
-            .expect("Error adding rustaceans to DB");
+            .expect("Error adding new task to DB");
         json!(result)
     })
     .await
 }
 
-#[put("/todo/<id>", format = "json", data = "<todo1>")]
-async fn update_task(
-    id: i32,
-    conn: DbConn,
-    todo1: Json<Todo>,
-) -> Value {
+#[put("/update/<id>", format = "json", data = "<update_todo>")]
+async fn update_todo(id: i32, conn: DbConn, update_todo: Json<Todo>) -> Value {
     conn.run(move |c| {
         let result = diesel::update(todo::table.find(id))
-            .set((
-                todo::iscompleted.eq(todo1.iscompleted.to_owned()),
-            ))
+            .set((todo::iscompleted.eq(update_todo.iscompleted.to_owned()),
+            todo::user.eq(update_todo.user.to_owned()),
+            todo::task.eq(update_todo.task.to_owned())
+             ))
             .execute(c)
-            .expect("Error updating rustaceans to DB");
+            .expect("Error updating todo to DB");
         json!(result)
     })
     .await
 }
 
-#[delete("/todo/<id>")]
-async fn delete_task(conn: DbConn, id: i32) -> Value {
+#[delete("/delete/<id>")]
+async fn delete_todo(conn: DbConn, id: i32) -> Value {
     conn.run(move |c| {
         let result = diesel::delete(todo::table.find(id))
             .execute(c)
@@ -94,7 +91,13 @@ fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![view_all_task, view_task, create_task, delete_task,update_task,],
+            routes![
+                view_all_todo,
+                view_one_todo,
+                create_todo,
+                update_todo,
+                delete_todo,
+            ],
         )
         .register("/", catchers![not_found])
         .attach(DbConn::fairing())
