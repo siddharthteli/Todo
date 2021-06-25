@@ -56,7 +56,7 @@ async fn create_todo(conn: DbConn, update_todo: Json<InsertableTodo>) -> Value {
 }
 
 #[put("/update/<id>", format = "json", data = "<update_todo>")]
-async fn update_todo(id: i32, conn: DbConn, update_todo: Json<Todo>) -> Value {
+async fn update_todo( id: i32, conn: DbConn, update_todo: Json<Todo>) -> Value {
     conn.run(move |c| {
         let result = diesel::update(todo::table.find(id))
             .set((todo::iscompleted.eq(update_todo.iscompleted.to_owned()),
@@ -65,7 +65,9 @@ async fn update_todo(id: i32, conn: DbConn, update_todo: Json<Todo>) -> Value {
              ))
             .execute(c)
             .expect("Error updating todo to DB");
-        json!({ "success": true, "data": result})
+            let mut message=String::from("Succesfully added New ID:");
+            message.push_str(&id.to_string());
+        json!({ "success": true, "data": result,"message":message})
     })
     .await
 }
