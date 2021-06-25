@@ -9,7 +9,7 @@ mod schema;
 //use auth::BasicAuth;
 use diesel::prelude::*;
 use models::*;
-use rocket::response::status;
+//use rocket::response::status;
 use rocket::serde::json::json;
 use rocket::serde::json::Json;
 use rocket::serde::json::Value;
@@ -22,11 +22,11 @@ struct DbConn(diesel::SqliteConnection);
 #[get("/view-all")]
 async fn view_all_todo(conn: DbConn) -> Value {
     conn.run(|c| {
-        let all = todo::table
+        let result = todo::table
             .limit(100)
             .load::<Todo>(c)
             .expect("Error loading todo from DB!");
-        json!(all)
+        json!({ "success": true, "data": result})
     })
     .await
 }
@@ -34,23 +34,23 @@ async fn view_all_todo(conn: DbConn) -> Value {
 #[get("/view/<id>")]
 async fn view_one_todo(id: i32, conn: DbConn) -> Value {
     conn.run(move |c| {
-        let rustacean = todo::table
+        let result = todo::table
             .find(id)
             .get_result::<Todo>(c)
             .expect("Task doesn't task");
-        json!(rustacean)
+        json!({ "success": true, "data": result})
     })
     .await
 }
 
-#[post("/create", format = "json", data = "<todo1>")]
-async fn create_todo(conn: DbConn, todo1: Json<InsertableTodo>) -> Value {
+#[post("/create", format = "json", data = "<update_todo>")]
+async fn create_todo(conn: DbConn, update_todo: Json<InsertableTodo>) -> Value {
     conn.run(|c| {
         let result = diesel::insert_into(todo::table)
-            .values(todo1.into_inner())
+            .values(update_todo.into_inner())
             .execute(c)
             .expect("Error adding new task to DB");
-        json!(result)
+        json!({ "success": true, "data": result})
     })
     .await
 }
@@ -65,7 +65,7 @@ async fn update_todo(id: i32, conn: DbConn, update_todo: Json<Todo>) -> Value {
              ))
             .execute(c)
             .expect("Error updating todo to DB");
-        json!(result)
+        json!({ "success": true, "data": result})
     })
     .await
 }
@@ -75,8 +75,8 @@ async fn delete_todo(conn: DbConn, id: i32) -> Value {
     conn.run(move |c| {
         let result = diesel::delete(todo::table.find(id))
             .execute(c)
-            .expect("Can't delete or ID doesn't exist");
-        json!(result)
+            .expect("Can't delete orcoz ID doesn't exist");
+        json!({ "success": true, "data": result})
     })
     .await
 }
